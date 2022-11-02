@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css">
+    <style>
+        *{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body{
+    background-color: rgb(22, 59, 158);
+    padding: 20px;
+}
+.weather-card{
+    background-color: #ffffff22;
+    height: auto;
+    margin: auto;
+    padding: 10px;
+    color: white;
+    border-radius: 10px;
+    display:inline-grid;
+    grid-template-columns: 1fr 1fr;
+}
+.weather-card .icon img{
+    width: 70px;
+ }
+ .weather-card .temp {
+    color: white;
+    font-size: 2rem;
+    font-weight: 700;
+ }
+ .weather-card .temp .uil{
+    font-size: 1.5rem;
+    position: relative;
+    top: -3px ;
+ }
+ .weather-card .details{
+    margin-left: 10px;
+    grid-column: span 2;
+ }
+/*
+NbKdLDIvbtj4GkAv4eKcP8CHctYhVin4
+*/
+    </style>
+</head>
+
+<body>
+    <div class="weather-card">
+        <div class="icon">
+        <img id="weather-icon" src="https://developer.accuweather.com/sites/default/files/02-s.png" alt="weather-icon">
+        </div>
+        <div class="temp"> <span id="value">28</span> <i class="uil uil-celsius"></i></div>
+        <div class="details">
+        <div class="place">
+            Place Name
+        </div>
+        <div class="weather-text">
+            Sunshine
+        </div>
+    </div>
+    </div>
+
+    
+    <div id="demo"></div>
+</body>
+<script>
+var x = document.getElementById("demo");
+let place = document.querySelector(".place");
+let weather_text = document.querySelector(".weather-text");
+
+function getLocation() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(showPosition, showError);
+  } else { 
+    x.innerHTML = "Geolocation is not supported by this browser.";
+  }
+}
+
+function showPosition(position) {
+  lat = position.coords.latitude ;
+  long = position.coords.longitude;
+  getArea(lat , long);
+}
+
+function showError(error) {
+  switch(error.code) {
+    case error.PERMISSION_DENIED:
+      x.innerHTML = "User denied the request for Geolocation."
+      break;
+    case error.POSITION_UNAVAILABLE:
+      x.innerHTML = "Location information is unavailable."
+      break;
+    case error.TIMEOUT:
+      x.innerHTML = "The request to get user location timed out."
+      break;
+    case error.UNKNOWN_ERROR:
+      x.innerHTML = "An unknown error occurred."
+      break;
+  }
+}
+getLocation();
+
+const getArea = (lat , long) => {
+    fetch("http://dataservice.accuweather.com/locations/v1/cities/geoposition/search?apikey=NbKdLDIvbtj4GkAv4eKcP8CHctYhVin4&q="+ lat + "%2C"+ long).then(response => response.json())
+  .then((json) => {
+    getCurrentWeather(json.Key);
+    let areaName =  json.LocalizedName;
+    let stateName = json.AdministrativeArea.ID;
+    place.innerHTML = areaName + "," + stateName;
+}).catch(error => x.innerHTML = "Location information is unavailable.");
+}
+let getCurrentWeather = (locationID) => {
+    fetch("http://dataservice.accuweather.com/currentconditions/v1/"+locationID+"?apikey=NbKdLDIvbtj4GkAv4eKcP8CHctYhVin4").then(response => response.json())
+  .then((json) => {
+    document.querySelector("#weather-icon").src="https://developer.accuweather.com/sites/default/files/0"+json[0].WeatherIcon+"-s.png";
+    weather_text.innerHTML = json[0].WeatherText;
+    document.querySelector(".temp #value").innerHTML =         json[0].Temperature.Metric.Value;
+    console.log(
+        json[0].Temperature.Metric.Value+"deg"+json[0].Temperature.Metric.Unit
+);
+  });
+}
+
+</script>
+</html>
